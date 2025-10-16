@@ -1,3 +1,5 @@
 .env
 *.json
 home_server_scripts.egg-info/
+.venv/
+.ruff_cache/
