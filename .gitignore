@@ -1,0 +1,3 @@
+.env
+*.json
+home_server_scripts.egg-info/
