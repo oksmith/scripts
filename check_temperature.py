@@ -9,9 +9,9 @@ from typing import List
 import requests
 from dotenv import load_dotenv
 
-THRESHOLD = 90.0
+THRESHOLD = 80.0
 WINDOW_SIZE = 3  # Look over the last 15 minutes, every 5 minutes
-HISTORY_FILE = os.path.join(os.path.dirname(__file__), "check_temperature_history.json")
+HISTORY_FILE = os.path.join(os.path.dirname(__file__), "cpu_temperature_history.json")
 
 load_dotenv()
 
@@ -34,22 +34,17 @@ def run_sensors() -> str:
         raise RuntimeError(f"`sensors` command failed with code {exc.returncode}: {exc.stderr}")
 
 
-def parse_cpu_temperatures(sensors_output: str) -> List[float]:
-    """
-    Extract only the temperature from the 'Package id 0:' line, if present.
-    Returns a single-element list with that temperature, or an empty list
-    if not found.
-    """
+def parse_cpu_temperatures(sensors_output: str) -> float | None:
+    """Extract temperature from 'Package id 0:' line."""
     for line in sensors_output.splitlines():
         if "Package id 0:" in line:
             match = re.search(r"\+(\d+(?:\.\d+)?)°C", line)
             if match:
                 try:
-                    return [float(match.group(1))]
+                    return float(match.group(1))
                 except ValueError:
-                    return []
-            return []
-    return []
+                    return None
+    return None
 
 
 def load_history(path: str) -> List[dict]:
@@ -134,14 +129,13 @@ def main() -> int:
         )
         return 1
 
-    temps = parse_cpu_temperatures(output)
-    if not temps:
+    current_temp = parse_cpu_temperatures(output)
+    if current_temp is None:
         msg = "No temperatures found in sensors output."
         print(msg, file=sys.stderr)
         send_notification(msg, "Monitoring Script Error", priority="high", tags="x")
         return 2
 
-    current_temp = temps[0]
     over = current_temp > THRESHOLD
 
     history = load_history(HISTORY_FILE)
