@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 THRESHOLD = 90.0
 WINDOW_SIZE = 3  # Look over the last 15 minutes, every 5 minutes
-HISTORY_FILE = os.path.join(os.path.dirname(__file__), ".check_temperature_history.json")
+HISTORY_FILE = os.path.join(os.path.dirname(__file__), "check_temperature_history.json")
 
 load_dotenv()
 
